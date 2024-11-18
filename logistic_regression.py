@@ -18,8 +18,8 @@ def generate_ellipsoid_clusters(distance, n_samples=100, cluster_std=0.5):
     X1 = np.random.multivariate_normal(mean=[1, 1], cov=covariance_matrix, size=n_samples)
     y1 = np.zeros(n_samples)
 
-    # Generate the second cluster (class 1) and shift by the distance
-    X2 = np.random.multivariate_normal(mean=[1 + distance, 1 + distance], cov=covariance_matrix, size=n_samples)
+    # Generate the second cluster (class 1) and shift along y = -x
+    X2 = np.random.multivariate_normal(mean=[1 + distance, 1 - distance], cov=covariance_matrix, size=n_samples)
     y2 = np.ones(n_samples)
 
     # Combine the clusters into one dataset
@@ -38,7 +38,7 @@ def fit_logistic_regression(X, y):
 def do_experiments(start, end, step_num):
     # Set up experiment parameters
     shift_distances = np.linspace(start, end, step_num)  # Range of shift distances
-    beta0_list, beta1_list, beta2_list, slope_list, intercept_list, loss_list, margin_widths = [], [], [], [], [], [], []
+    beta0_list, beta1_list, beta2_list, slope_list, intercept_list, loss_list, margin_widths, intercept_ratios = [], [], [], [], [], [], [], []
     sample_data = {}  # Store sample datasets and models for visualization
 
     n_samples = 8
@@ -69,6 +69,7 @@ def do_experiments(start, end, step_num):
         slope_list.append(slope)
         intercept_list.append(intercept)
         loss_list.append(logistic_loss)
+        intercept_ratios.append(beta0 / beta2)  # Compute Beta0 / Beta2 (intercept ratio)
 
         # Plot the dataset
         plt.subplot(n_rows, n_cols, i)
@@ -151,15 +152,22 @@ def do_experiments(start, end, step_num):
     plt.xlabel("Shift Distance")
     plt.ylabel("Slope")
 
-    # Plot logistic loss
+    # Plot beta0 / beta2 (Intercept Ratio)
     plt.subplot(3, 3, 5)
+    plt.plot(shift_distances, intercept_ratios, marker="o", label="Intercept Ratio (Beta0 / Beta2)")
+    plt.title("Shift Distance vs Beta0 / Beta2 (Intercept Ratio)")
+    plt.xlabel("Shift Distance")
+    plt.ylabel("Beta0 / Beta2")
+
+    # Plot logistic loss
+    plt.subplot(3, 3, 6)
     plt.plot(shift_distances, loss_list, marker="o", label="Logistic Loss")
     plt.title("Shift Distance vs Logistic Loss")
     plt.xlabel("Shift Distance")
     plt.ylabel("Logistic Loss")
 
     # Plot margin width
-    plt.subplot(3, 3, 6)
+    plt.subplot(3, 3, 7)
     plt.plot(shift_distances, margin_widths, marker="o", label="Margin Width")
     plt.title("Shift Distance vs Margin Width")
     plt.xlabel("Shift Distance")
